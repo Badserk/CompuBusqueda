@@ -1,11 +1,14 @@
 from urllib.parse import urlencode
 
 FILTROS = {
+    "ciudad":{
+    "bogota": "bogota-dc"
+        },
         #by
     "ordenar_por":{
-        "relevance": "relevancia",
-        "publicationtime": "fecha",
-        "salary": "salario"
+    "relevance": "relevancia",
+    "publicationtime": "fecha",
+    "salary": "salario"
         },
         #pubdate
         "fecha":{
