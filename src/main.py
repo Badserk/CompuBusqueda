@@ -1,25 +1,50 @@
-from filtros import construir_url
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium_stealth import stealth
+from selenium.webdriver.chrome.options import Options
 from buscador import buscar_empleos
-from exportador import exportar_csv
 
-def main():
-    area = "informatica-y-telecom"
-    ciudad = "bogota-dc"
-    salario = 4
-    experiencia = 4
-    contrato = 5
+def configurar_driver():
+    """
+    #!Configura y retorna una instancia de WebDriver con opciones de evasión de detección.
+    
+    """
+    options = Options()
+    options.add_argument("--disable-blink-features=AutomationControlled") #? desactiva la detección del 'bot'
+    options.add_argument("--headless=new") #? abre el navegador sin ventana
 
-    url = construir_url(area, ciudad, salario, experiencia, contrato)
-    print(f"Buscando en: {url}")
-    
-    resultados = buscar_empleos(url)
-    print(f"Se encontraron {len(resultados)} empleos.")
-    
+    servicio = Service("drivers/chromedriver.exe")
+    driver = webdriver.Chrome(service=servicio, options=options)
+
+    # Aplicar técnicas de evasión de detección automatizada
+    stealth(driver,
+            languages=["es-ES", "es"],
+            vendor="Google Inc.",
+            platform="Win32",
+            webgl_vendor="Intel Inc.",
+            renderer="Intel Iris OpenGL Engine",
+            fix_hairline=True,
+    )
+
+    return driver
+
+def mostrar_resultados(resultados):
+    """
+    Imprime los resultados de búsqueda en consola.
+    """
     if resultados:
-        exportar_csv(resultados)
-        print("Exportado a empleos.csv")
+        print(f"\n🔎 Se encontraron {len(resultados)} ofertas:\n")
+        for r in resultados:
+            print(f"📌 {r['titulo']} | 🏢 {r['empresa']} | 💰 {r['salario']}")
     else:
-        print("No se encontraron resultados.")
+        print("❌ No se encontraron ofertas.")
 
 if __name__ == "__main__":
-    main()
+    url = "https://co.computrabajo.com/empleos-en-bogota-dc-jornada-tiempo-completo?sal=1&cont=5"
+    driver = configurar_driver()
+
+    try:
+        resultados = buscar_empleos(url, driver)
+        mostrar_resultados(resultados)
+    finally:
+        driver.quit()
